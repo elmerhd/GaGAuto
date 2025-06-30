@@ -1,34 +1,27 @@
+-- Wait until the game is fully loaded and the LocalPlayer is available
 repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
 
--- Base64 decoding logic
-local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-local function base64Decode(data)
-    data = data:gsub('[^'..b..'=]', '')
-    return (data:gsub('.', function(x)
-        if x == '=' then return '' end
-        local r,f='',(b:find(x)-1)
-        for i=6,1,-1 do r=r..(f%2^i - f%2^(i-1) > 0 and '1' or '0') end
-        return r
-    end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-        if #x ~= 8 then return '' end
-        local c=0
-        for i=1,8 do c=c + (x:sub(i,i)=='1' and 2^(8-i) or 0) end
-        return string.char(c)
-    end))
-end
+-- Map of PlaceIds to corresponding script URLs
+local scripts = {
+    [126884695634066] = "https://raw.githubusercontent.com/NoLag-id/No-Lag-HUB/refs/heads/main/Garden/Garden-V2.lua",
+}
 
-local encodedUrl = "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL05vTGFnLWlkL05vLUxhZy1IVUIvcmVmcy9oZWFkcy9tYWluL0dhcmRlbi9HYXJkZW4tVjIubHVh"
+-- Get the script URL for the current game
+local url = scripts[game.PlaceId]
 
-
-local url = base64Decode(encodedUrl)
-local success, response = pcall(game.HttpGet, game, url)
-if success and response then
-    local loadedFunc, err = loadstring(response)
-    if loadedFunc then
-        loadedFunc()
+-- If a script URL exists for this PlaceId, try to load and execute it
+if url then
+    local success, response = pcall(game.HttpGet, game, url)
+    if success and response then
+        local loadedFunction, loadErr = loadstring(response)
+        if loadedFunction then
+            loadedFunction()
+        else
+            warn("Failed to load string: " .. tostring(loadErr))
+        end
     else
-        warn("Loadstring failed: " .. tostring(err))
+        warn("HTTP Get failed: " .. tostring(response))
     end
 else
-    warn("Failed to fetch script: " .. tostring(response))
+    warn("No script found for this PlaceId: " .. tostring(game.PlaceId))
 end
