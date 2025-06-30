@@ -1,5 +1,5 @@
 -- Wait until the game is fully loaded and the LocalPlayer is available
-repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 -- Map of PlaceIds to corresponding script URLs
 local scripts = {
